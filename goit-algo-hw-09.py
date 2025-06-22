@@ -1,30 +1,53 @@
-import heapq
+import time
 
-def heap_sort(arr, descending=False):
-    heap = []
-    for el in arr:
-        heapq.heappush(heap, el)  # просочування вгору — як у конспекті
-    sorted_list = [heapq.heappop(heap) for _ in range(len(heap))]  # просочування вниз
-    return sorted_list[::-1] if descending else sorted_list
+coins = [50, 25, 10, 5, 2, 1]
+
+# Жадібний алгоритм
+def find_coins_greedy(amount):
+    result = {}
+    for coin in coins:
+        if amount >= coin:
+            count = amount // coin
+            result[coin] = count
+            amount -= coin * count
+    return result
+
+# Динамічне програмування
+def find_min_coins(amount):
+    min_coins = [0] + [float('inf')] * amount
+    coin_used = [0] * (amount + 1)
+
+    for i in range(1, amount + 1):
+        for coin in coins:
+            if i >= coin and min_coins[i - coin] + 1 < min_coins[i]:
+                min_coins[i] = min_coins[i - coin] + 1
+                coin_used[i] = coin
+
+    result = {}
+    while amount > 0:
+        coin = coin_used[amount]
+        result[coin] = result.get(coin, 0) + 1
+        amount -= coin
+    return result
 
 # Тестування
-arr = [12, 11, 13, 5, 6, 7]
-print("Пірамідальне сортування за зростанням:", heap_sort(arr))
-print("Пірамідальне сортування за спаданням:", heap_sort(arr, descending=True))
+amount = 113
+print("Greedy:", find_coins_greedy(amount))
+print("DP:", find_min_coins(amount))
 
-def min_total_cost(cables):
-    heapq.heapify(cables)
-    total = 0
-    while len(cables) > 1:
-        a = heapq.heappop(cables)
-        b = heapq.heappop(cables)
-        merged = a + b
-        total += merged
-        heapq.heappush(cables, merged)
-    return total
+# Порівняння ефективності
+large_amount = 10000
+start = time.time()
+find_coins_greedy(large_amount)
+end = time.time()
+greedy_time = end - start
 
-# Тестування
-cables = [4, 3, 2, 6]
-print("Мінімальні витрати на з'єднання кабелів:", min_total_cost(cables))
+start = time.time()
+find_min_coins(large_amount)
+end = time.time()
+dp_time = end - start
+
+print(f"Час жадібного алгоритму: {greedy_time:.6f} с")
+print(f"Час динамічного програмування: {dp_time:.6f} с")
 
 
